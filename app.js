@@ -1,28 +1,48 @@
-var express = require('express');
-var app = express();
-var bodyParsor = require('body-parser');
+var express     = require('express'),
+    app         = express(),
+    bodyParsor  = require('body-parser'),
+    mongoose    = require('mongoose');
+
+mongoose.connect('mongodb+srv://jurgest:saadmin@cluster0.t66cq.mongodb.net/YalpCamp?retryWrites=true&w=majority');
 
 app.use(bodyParsor.urlencoded({extended: true}))
 app.set('view engine', 'ejs');
-var campgrounds = [
-    {name: 'First mountin', image:'https://pixabay.com/get/ge84e8df0a74e2375155fef13bd48877407d192ff9225a48e4b6788c2b10e1affc84abd8f082220b8e32a44240563354a_340.jpg'},
-    {name: 'second mountin', image:'https://pixabay.com/get/g6d464dba6484798fc09a63efc50b752d2d7cbf1aed02a9a9b42a073331f7dd572b75dcc56e767e0a7ee8e8218249f752_340.jpg'},
-    {name: 'third mountin', image:'https://pixabay.com/get/g7949718ac7fec181a78bf9a2aed9ef8f372e217dd3025e5fab0adfd85fc441ebbaaab9d0945eb187b62261ea4ff2b770_340.jpg'},
-    {name: 'First mountin', image:'https://pixabay.com/get/ge84e8df0a74e2375155fef13bd48877407d192ff9225a48e4b6788c2b10e1affc84abd8f082220b8e32a44240563354a_340.jpg'},
-    {name: 'second mountin', image:'https://pixabay.com/get/g6d464dba6484798fc09a63efc50b752d2d7cbf1aed02a9a9b42a073331f7dd572b75dcc56e767e0a7ee8e8218249f752_340.jpg'},
-    {name: 'third mountin', image:'https://pixabay.com/get/g7949718ac7fec181a78bf9a2aed9ef8f372e217dd3025e5fab0adfd85fc441ebbaaab9d0945eb187b62261ea4ff2b770_340.jpg'},
-    {name: 'First mountin', image:'https://pixabay.com/get/ge84e8df0a74e2375155fef13bd48877407d192ff9225a48e4b6788c2b10e1affc84abd8f082220b8e32a44240563354a_340.jpg'},
-    {name: 'second mountin', image:'https://pixabay.com/get/g6d464dba6484798fc09a63efc50b752d2d7cbf1aed02a9a9b42a073331f7dd572b75dcc56e767e0a7ee8e8218249f752_340.jpg'},
-    {name: 'third mountin', image:'https://pixabay.com/get/g7949718ac7fec181a78bf9a2aed9ef8f372e217dd3025e5fab0adfd85fc441ebbaaab9d0945eb187b62261ea4ff2b770_340.jpg'}
 
-];
+// SCHEMA setup
+var campgroundSchema = new mongoose.Schema({
+    name: String,
+    image: String
+});
+
+var Campgrounds = mongoose.model('Campground', campgroundSchema);
+// Campgrounds.create(
+//     {
+//         name: 'Camp 2',
+//         image:'https://pixabay.com/get/g6d464dba6484798fc09a63efc50b752d2d7cbf1aed02a9a9b42a073331f7dd572b75dcc56e767e0a7ee8e8218249f752_340.jpg' 
+//     }, (err, campground)=> {
+//         if(err) {
+//             console.log(err);
+//         }else {
+//             console.log('new camp created');
+//             console.log(campground);
+//         }
+//     });
+
+
 
 app.get('/', (req, res) => {
     res.render('landing');
 });
 
 app.get('/campgrounds', (req, res)=> {
-    res.render('campgrounds', {campgrounds: campgrounds});
+    // res.render('campgrounds', {campgrounds: campgrounds});
+    Campgrounds.find({}, (err, allCampgrounds)=> {
+        if(err) {
+            console.log(err)
+        } else{
+            res.render('campgrounds', {campgrounds:allCampgrounds});
+        }
+    });
 });
 
 app.get('/campgrounds/new', (req, res)=> {
@@ -34,9 +54,15 @@ app.post('/campgrounds', (req, res)=> {
     var name = req.body.name ;
     var image = req.body.image;
     var newCampground = {name: name, image: image};
-    campgrounds.push(newCampground);
-    // redirect back to campgrounds
-    res.redirect('/campgrounds');
+    Campgrounds.create(newCampground,(err, newlyCreated) =>{
+        if(err) {
+            console.log(err)
+        }else{// redirect back to campgrounds
+            res.redirect('/campgrounds');
+        }
+    });
+    
+    
 });
 
 app.listen(3000, () => {
