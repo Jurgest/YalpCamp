@@ -8,7 +8,8 @@ var express     = require('express'),
     seedDB      = require('./seeds'),
     User        = require('./models/user'),
     passport    = require('passport'),
-    LocalStrategy=require('passport-local');
+    LocalStrategy=require('passport-local'),
+    methodOverride = require('method-override');
 // require routes
 var commentRoutes    = require('./routes/comments'),
     campgroundRoutes = require('./routes/campgrounds'),
@@ -19,6 +20,7 @@ app.use(require('express-session')({
     resave: false,
     saveUninitialized: false
 }));
+app.use(methodOverride('_method'));
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
